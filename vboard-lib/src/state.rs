@@ -1,12 +1,12 @@
 use crate::{common::*, routing::RouterHandle, utils};
 use anyhow::Context;
 use async_once_watch::OnceWatch;
-use dashmap::DashSet;
+use dashmap::DashMap;
 
 pub struct GlobalState {
     pub instance_id: String,
     pub working_dir: PathBuf,
-    pub clients: DashSet<Cow<'static, str>>,
+    pub videos: DashMap<Cow<'static, str>, VideoContext>,
     pub route_handle: RouterHandle,
 }
 
@@ -15,6 +15,12 @@ impl GlobalState {
         let dir_name = utils::percent_encode(client_name);
         self.working_dir.join(dir_name)
     }
+}
+
+pub struct VideoContext {
+    pub name: Cow<'static, str>,
+    pub height: usize,
+    pub width: usize,
 }
 
 pub static GLOBAL_STATE: Lazy<OnceWatch<GlobalState>> = Lazy::new(OnceWatch::new);
@@ -36,7 +42,7 @@ pub fn init(route_handle: RouterHandle) -> Result<()> {
     let state = GlobalState {
         instance_id,
         working_dir,
-        clients: DashSet::new(),
+        videos: DashMap::new(),
         route_handle,
     };
 

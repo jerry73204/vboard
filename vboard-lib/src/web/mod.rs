@@ -17,7 +17,11 @@ pub async fn run_web_server() -> Result<()> {
 
 async fn index_page(_: Request<()>) -> tide::Result {
     let state = GLOBAL_STATE.get().await;
-    let names: Vec<_> = state.clients.iter().map(|name| (*name).clone()).collect();
+    let names: Vec<_> = state
+        .videos
+        .iter()
+        .map(|pair| pair.value().name.clone())
+        .collect();
 
     let template = template::Index {
         title: "test".into(),

@@ -1,7 +1,7 @@
 use crate::{
     common::*,
     msg::{self, Registration},
-    state::GLOBAL_STATE,
+    state::{VideoContext, GLOBAL_STATE},
 };
 
 pub(crate) fn run_routing_server() -> (RouterHandle, BoxFuture<'static, Result<()>>) {
@@ -26,7 +26,20 @@ pub struct RouterHandle {
 impl RouterHandle {
     pub(crate) async fn register(&self, config: Registration) -> Result<SampleHandle> {
         let name = config.name.clone();
-        let ok = GLOBAL_STATE.get().await.clients.insert(name.clone());
+
+        let ok = GLOBAL_STATE
+            .get()
+            .await
+            .videos
+            .insert(
+                name.clone(),
+                VideoContext {
+                    name: name.clone(),
+                    height: config.height,
+                    width: config.width,
+                },
+            )
+            .is_none();
         ensure!(ok, "the client '{}' is already registered", name);
 
         let (sample_tx, sample_rx) = flume::unbounded();
