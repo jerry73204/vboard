@@ -9,15 +9,15 @@ pub(crate) async fn run_video_server(
         width,
         height,
     } = config;
-
     let client_dir = GLOBAL_STATE.get().await.client_dir(&name);
+
+    // generate launch string
     let launch = format!(
         "appsrc name=appsrc ! \
             video/x-raw, format=RGB, width={}, height={}, framerate=10/1 ! \
             videoconvert ! \
             x264enc ! \
             h264parse ! \
-            mp4mux ! \
             hlssink2 max-files=5 location={}/segment%%05d.ts playlist-location={}/playlist.m3u8",
         width,
         height,
@@ -25,6 +25,13 @@ pub(crate) async fn run_video_server(
         client_dir.display(),
     );
 
+    // initialize gstreamer
+    static GST_INIT: Once = Once::new();
+    GST_INIT.call_once(|| {
+        gst::init().expect("unable to initialize gstreamer");
+    });
+
+    // initialize pipeline
     let pipeline = gst::parse_launch(&launch)?
         .dynamic_cast::<gst::Pipeline>()
         .map_err(|_| anyhow!("Cannot cast launch string to Pipeline type"))?;
