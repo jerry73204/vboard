@@ -18,8 +18,8 @@ tide = { version = "0.16.0", features = ["logger", "h1-server"], default-feature
 dirs = "4.0.0"
 uuid = "0.8.2"
 chrono = "0.4.19"
-async-once-watch = "0.1.0"
-async-std = { version = "1.10.0" }
+async-once-watch = "0.1.1"
+async-std = "1.10.0"
 askama = "0.11.1"
 askama_tide = "0.14.0"
 
