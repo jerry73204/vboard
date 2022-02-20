@@ -2,6 +2,6 @@ use futures::future;
 
 #[async_std::main]
 async fn main() {
-    let handle = vboard_lib::register("simple", [640, 480]).await;
+    let _handle = vboard_lib::register("simple", [480, 640]).await;
     let () = future::pending().await;
 }
