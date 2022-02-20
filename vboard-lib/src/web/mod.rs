@@ -68,7 +68,7 @@ async fn file_page(req: Request<()>) -> tide::Result {
         todo!();
     } else {
         Err(Error::new(
-            StatusCode::Unauthorized,
+            StatusCode::NotFound,
             anyhow!("invalid file name"),
         ))
     }

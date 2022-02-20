@@ -22,6 +22,7 @@ async-once-watch = "0.1.1"
 async-std = "1.10.0"
 askama = "0.11.1"
 askama_tide = "0.14.0"
+gstreamer-video = "0.18.4"
 
 [dev-dependencies]
 async-std = { version = "1.10.0", features = ["attributes"] }

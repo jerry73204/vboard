@@ -9,6 +9,7 @@ pub use futures::{
 pub use gstreamer as gst;
 pub use gstreamer::prelude::*;
 pub use gstreamer_app as gst_app;
+pub use gstreamer_video as gst_video;
 pub use log::{error, info};
 pub use once_cell::sync::{Lazy, OnceCell};
 pub use std::{
@@ -23,5 +24,5 @@ pub use std::{
         Once,
     },
     thread,
-    time::Instant,
+    time::{Duration, Instant},
 };
