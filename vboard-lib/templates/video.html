@@ -9,7 +9,8 @@
 {% endblock %}
 
 {% block content %}
-<h1>Index</h1>
-<p>Hello, world!</p>
+<video width="{{ width }}" height="{{ height }}" controls>
+    <source src="/file/{{ name }}/playlist.m3u8" type="application/x-mpegURL">
+</video>
 {% endblock %}
 

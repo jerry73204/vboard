@@ -8,7 +8,7 @@ pub async fn run_web_server() -> Result<()> {
 
     let mut app = tide::new();
     app.at("/").get(index_page);
-    app.at("/video/:name/").get(video_page);
+    app.at("/video/:name").get(video_page);
     app.at("/file/:name/:file").get(file_page);
     app.listen("127.0.0.1:8080").await?;
 
@@ -33,7 +33,20 @@ async fn index_page(_: Request<()>) -> tide::Result {
 
 async fn video_page(req: Request<()>) -> tide::Result {
     let name = req.param("name")?;
-    let template = template::Video { name: name.into() };
+
+    let state = GLOBAL_STATE.get().await;
+    let context = state.videos.get(name).ok_or_else(|| {
+        Error::new(
+            StatusCode::NotFound,
+            anyhow!("the video '{}' does not exist", name),
+        )
+    })?;
+
+    let template = template::Video {
+        name: context.name.clone(),
+        height: context.height,
+        width: context.width,
+    };
 
     Ok(template.into())
 }

@@ -11,5 +11,7 @@ pub struct Index {
 #[derive(Template)]
 #[template(path = "video.html")]
 pub struct Video {
-    pub name: String,
+    pub name: Cow<'static, str>,
+    pub height: usize,
+    pub width: usize,
 }
