@@ -2,6 +2,3 @@
 members = [
     "vboard-lib",
 ]
-
-[patch.crates-io]
-async-once-watch = { path = "../async-once-watch" }
