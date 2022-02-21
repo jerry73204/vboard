@@ -1,6 +1,7 @@
 use crate::{
     common::*,
-    msg::{self, Registration},
+    config::Registration,
+    msg,
     state::{VideoContext, GLOBAL_STATE},
 };
 

@@ -11,8 +11,8 @@ pub struct GlobalState {
 }
 
 impl GlobalState {
-    pub fn client_dir(&self, client_name: &str) -> PathBuf {
-        let dir_name = utils::percent_encode(client_name);
+    pub fn video_dir(&self, name: &str) -> PathBuf {
+        let dir_name = utils::percent_encode(name);
         self.working_dir.join(dir_name)
     }
 }

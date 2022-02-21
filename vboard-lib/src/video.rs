@@ -1,15 +1,10 @@
-use crate::{common::*, msg, msg::Registration, state::GLOBAL_STATE};
+use crate::{common::*, config, msg, state::GLOBAL_STATE};
 
 pub(crate) async fn run_video_server(
-    config: Registration,
+    config: config::Registration,
     sample_rx: flume::Receiver<msg::Sample>,
 ) -> Result<()> {
-    let Registration {
-        name,
-        width,
-        height,
-    } = config;
-    let client_dir = GLOBAL_STATE.get().await.client_dir(&name);
+    let video_dir = GLOBAL_STATE.get().await.video_dir(&config.name);
 
     // initialize gstreamer
     static GST_INIT: Once = Once::new();
@@ -39,10 +34,7 @@ pub(crate) async fn run_video_server(
         .dynamic_cast::<gst_app::AppSrc>()
         .map_err(|_| anyhow!("Cannot cast to AppSrc"))?;
 
-    let video_info =
-        gst_video::VideoInfo::builder(gst_video::VideoFormat::Bgrx, width as u32, height as u32)
-            .fps(gst::Fraction::new(10, 1))
-            .build()?;
+    let video_info = to_video_info(&config)?;
 
     appsrc.set_caps(Some(&video_info.to_caps()?));
     appsrc.set_format(gst::Format::Time);
@@ -51,11 +43,11 @@ pub(crate) async fn run_video_server(
     hlssink2.set_property("max-files", 5u32);
     hlssink2.set_property(
         "location",
-        &format!("{}/segment%%05d.ts", client_dir.display()),
+        &format!("{}/segment%%05d.ts", video_dir.display()),
     );
     hlssink2.set_property(
         "playlist-location",
-        &format!("{}/playlist.m3u8", client_dir.display()),
+        &format!("{}/playlist.m3u8", video_dir.display()),
     );
 
     // forward messags from channel to pipeline
@@ -104,4 +96,57 @@ pub(crate) async fn run_video_server(
     futures::try_join!(forward_fut, pipeline_fut)?;
 
     Ok(())
+}
+
+fn to_video_info(config: &config::Registration) -> Result<gst_video::VideoInfo> {
+    use gst::Fraction;
+    use gst_video::{VideoChromaSite, VideoFormat, VideoInfo};
+
+    let config::Registration {
+        format,
+        width,
+        height,
+        frame_rate,
+        ..
+    } = *config;
+
+    let fps = {
+        let config::FrameRateFrac(num, deno) = frame_rate;
+        Fraction::new(num as i32, deno as i32)
+    };
+
+    let video_format = {
+        use config::ImageFormat as I;
+        use VideoFormat as V;
+
+        match format {
+            I::JPEG => V::Encoded,
+            I::GRAY8 => V::Gray8,
+            I::GRAY16_LE => V::Gray16Le,
+            I::GRAY16_BE => V::Gray16Be,
+            I::RGB => V::Rgb,
+            I::BGR => V::Bgr,
+            I::RGBA => V::Rgba,
+            I::ARGB => V::Argb,
+            I::BGRA => V::Bgra,
+            I::ABGR => V::Abgr,
+        }
+    };
+
+    let chroma_site = {
+        use config::ImageFormat as I;
+        use VideoChromaSite as S;
+
+        match format {
+            I::JPEG => S::JPEG,
+            _ => S::NONE,
+        }
+    };
+
+    let info = VideoInfo::builder(video_format, width as u32, height as u32)
+        .fps(fps)
+        .chroma_site(chroma_site)
+        .build()?;
+
+    Ok(info)
 }

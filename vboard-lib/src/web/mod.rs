@@ -56,8 +56,8 @@ async fn file_page(req: Request<()>) -> tide::Result {
     let file_name = req.param("file")?;
 
     if file_name == "playlist.m3u8" {
-        let client_dir = GLOBAL_STATE.get().await.client_dir(name);
-        let path = client_dir.join(file_name);
+        let video_dir = GLOBAL_STATE.get().await.video_dir(name);
+        let path = video_dir.join(file_name);
 
         let mut res = Response::new(StatusCode::Ok);
         let body = Body::from_file(&path).await?;
